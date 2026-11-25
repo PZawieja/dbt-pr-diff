@@ -8,20 +8,13 @@ It is a GitHub Action and a CLI of about 1,000 lines with no server and no accou
 
 ## What the comment looks like
 
-From the [fan-out demo PR](https://github.com/PZawieja/dbt-pr-diff/pull/2), where a join to `stg_inverters` duplicates every site with more than one inverter:
+This is the real comment on the [fan-out demo PR](https://github.com/PZawieja/dbt-pr-diff/pull/2), where a join to `stg_inverters` duplicates every site that has more than one inverter:
 
-> ## ❌ dbt-pr-diff: 2 checks failed
->
-> | Model | Rows base → head | Δ rows | Added | Removed | Changed | Dup keys | Status |
-> |---|--:|--:|--:|--:|--:|--:|---|
-> | `fct_daily_generation` | 2,441 → 4,056 | +66.2% | 0 | 0 | 0 | 1,133 | ❌ failed |
-> | `fct_site_monthly` | 120 → 120 | 0% | 0 | 0 | 56 | 0 | ⚠️ changed |
->
-> | Column | Sum base | Sum head | Δ | Avg base | Avg head | Δ |
-> |---|--:|--:|--:|--:|--:|--:|
-> | `energy_kwh` | 82,393.7 | 135,708.7 | +64.7% | 33.75 | 33.46 | -0.9% |
+<img src="docs/images/pr-comment-fan-out.png" width="820" alt="A dbt-pr-diff pull request comment titled 2 checks failed. fct_daily_generation went from 2,441 to 4,056 rows, plus 66.2 percent, with 1,133 duplicate keys and a failed status. The metrics table shows energy_kwh summing to 82,393.7 on main and 135,708.7 on the PR, plus 64.7 percent, while its average moves from 33.75 to 33.46, minus 0.9 percent.">
 
-The average barely moves. The sum is up 65%. That's the reason the comment shows both.
+The average barely moves while the sum goes up 65%, which is why the comment shows both:
+
+<img src="docs/images/average-hides-fan-out.svg" width="820" alt="Two bar charts for demo PR 2. Average energy per row goes from 33.75 to 33.46 kWh, minus 0.9 percent, which looks fine. Total energy goes from 82,394 to 135,709 kWh, plus 64.7 percent, inflated by duplicate rows.">
 
 ## How it works
 
