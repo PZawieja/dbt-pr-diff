@@ -9,5 +9,5 @@ SELECT
     , generation_date
     , energy_kwh
     , irradiance_kwh_m2
-    , ROUND(energy_kwh / (peak_kw * 24), 4) AS capacity_factor
+    , ROUND(energy_kwh / (installed_kw * 24), 4) AS capacity_factor
 FROM daily
