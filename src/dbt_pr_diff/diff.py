@@ -183,11 +183,15 @@ def _sample_changed(con, b, h, spec: ModelSpec, common: list[str]) -> list[dict]
     order = "kc.k"
     metrics = [m for m in spec.metrics if m in common]
     if metrics:
-        m = q(metrics[0])
-        order = (
-            f"ABS(TRY_CAST(hh.{m} AS DOUBLE) - TRY_CAST(bb.{m} AS DOUBLE)) "
-            "DESC NULLS LAST, kc.k"
+        def num(alias: str, m: str) -> str:
+            return f"TRY_CAST({alias}.{q(m)} AS DOUBLE)"
+
+        deltas = ", ".join(
+            f"COALESCE(ABS({num('hh', m)} - {num('bb', m)})"
+            f" / NULLIF(ABS({num('bb', m)}), 0), 0)"
+            for m in metrics
         )
+        order = f"GREATEST({deltas}, 0) DESC, kc.k"
     select_cols = ", ".join(
         f"CAST(bb.{q(c)} AS VARCHAR), CAST(hh.{q(c)} AS VARCHAR)" for c in common
     )
@@ -240,7 +244,9 @@ def diff_model(con, spec: ModelSpec) -> ModelDiff:
 
     metrics = [m for m in spec.metrics if m in common]
     mb, mh = _metric_stats(con, b, metrics), _metric_stats(con, h, metrics)
-    d.metrics = [MetricShift(m, *mb[m], *mh[m]) for m in metrics]
+    d.metrics = [
+        MetricShift(m, mb[m][0], mh[m][0], mb[m][1], mh[m][1]) for m in metrics
+    ]
 
     if spec.keys and all(k in common for k in spec.keys):
         _key_diff(con, b, h, spec, common, d)

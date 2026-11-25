@@ -15,6 +15,10 @@ def _n(value) -> str:
     return f"{value:,}"
 
 
+def _cell(value) -> str:
+    return "–" if value is None else str(value).replace("|", "\\|")
+
+
 def _pct(value: float | None) -> str:
     if value is None:
         return "–"
@@ -120,8 +124,10 @@ def _details(d: ModelDiff) -> list[str]:
         ]
         for row in d.sample_changed:
             for i, (col, (before, after)) in enumerate(row["columns"].items()):
-                key = f"`{row['key']}`" if i == 0 else ""
-                out.append(f"| {key} | `{col}` | {before} | {after} |")
+                key = f"`{_cell(row['key'])}`" if i == 0 else ""
+                out.append(
+                    f"| {key} | `{_cell(col)}` | {_cell(before)} | {_cell(after)} |"
+                )
         out.append("")
     for label, keys in (("Added", d.sample_added), ("Removed", d.sample_removed)):
         if keys:

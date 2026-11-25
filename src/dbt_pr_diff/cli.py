@@ -249,6 +249,10 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     if args.base_db and not args.base_state:
         parser.error("--base-db needs --base-state")
+    try:
+        thresholds.parse(args.fail_on)
+    except ValueError as exc:
+        parser.error(str(exc))
     sys.exit(compare(args))
 
 

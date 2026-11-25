@@ -1,0 +1,24 @@
+name: pr-diff
+
+on:
+  pull_request:
+    paths:
+      - "examples/telhado/**"
+      - "src/**"
+      - "action.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          project-dir: examples/telhado
+          fail-on: pk_duplicates,removed_rows,row_count_pct>10
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

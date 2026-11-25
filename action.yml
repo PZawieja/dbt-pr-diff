@@ -1,0 +1,82 @@
+name: dbt-pr-diff
+description: Post the numbers on dbt pull requests. Row counts, key changes, grain breaks and metric shifts, compared in DuckDB.
+author: Piotr Zawieja
+branding:
+  icon: bar-chart-2
+  color: orange
+
+inputs:
+  project-dir:
+    description: Path to the dbt project, relative to the repo root.
+    default: "."
+  base-ref:
+    description: Branch to compare against. Defaults to the pull request's base branch.
+    default: ""
+  select:
+    description: dbt selector for the models to diff.
+    default: "state:modified+"
+  fail-on:
+    description: >
+      Comma list of checks that fail the step: pk_duplicates, removed_rows,
+      added_rows, changed_rows, schema_change, row_count_pct>N, metric_pct>N.
+    default: ""
+  comment:
+    description: Upsert one sticky comment on the pull request.
+    default: "true"
+  dbt-duckdb-version:
+    description: Pin dbt-duckdb (for example 1.9.4). Empty means latest.
+    default: ""
+  github-token:
+    description: Token used to comment. Needs pull-requests write.
+    default: ${{ github.token }}
+
+outputs:
+  report:
+    description: Path to the JSON report.
+    value: ${{ steps.diff.outputs.report }}
+
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@v6
+
+    - name: Fetch base branch
+      shell: bash
+      env:
+        BASE_REF: ${{ inputs.base-ref || github.base_ref || 'main' }}
+      run: git fetch --no-tags --depth=1 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+
+    - name: Diff changed models
+      id: diff
+      shell: bash
+      env:
+        BASE_REF: ${{ inputs.base-ref || github.base_ref || 'main' }}
+        PROJECT_DIR: ${{ inputs.project-dir }}
+        SELECTOR: ${{ inputs.select }}
+        FAIL_ON: ${{ inputs.fail-on }}
+        COMMENT: ${{ inputs.comment }}
+        DBT_DUCKDB_VERSION: ${{ inputs.dbt-duckdb-version }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: |
+        with=()
+        if [ -n "$DBT_DUCKDB_VERSION" ]; then with=(--with "dbt-duckdb==$DBT_DUCKDB_VERSION"); fi
+        flags=()
+        if [ "$COMMENT" = "true" ]; then flags+=(--comment); fi
+        echo "report=.pr-diff/pr-diff.json" >> "$GITHUB_OUTPUT"
+        uvx --python 3.12 "${with[@]}" --with anthropic --from "$ACTION_PATH" dbt-pr-diff compare \
+          --base-ref "origin/${BASE_REF}" \
+          --project-dir "$PROJECT_DIR" \
+          --select "$SELECTOR" \
+          --fail-on "$FAIL_ON" \
+          "${flags[@]}"
+
+    - name: Upload report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: dbt-pr-diff
+        path: |
+          .pr-diff/pr-diff.json
+          .pr-diff/pr-diff.md
+        if-no-files-found: ignore
