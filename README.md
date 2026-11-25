@@ -10,7 +10,7 @@ It is a GitHub Action and a CLI of about 1,000 lines with no server and no accou
 
 This is the real comment on the [fan-out demo PR](https://github.com/PZawieja/dbt-pr-diff/pull/2), where a join to `stg_inverters` duplicates every site that has more than one inverter:
 
-<img src="docs/images/pr-comment-fan-out.png" width="820" alt="A dbt-pr-diff pull request comment titled 2 checks failed. fct_daily_generation went from 2,441 to 4,056 rows, plus 66.2 percent, with 1,133 duplicate keys and a failed status. The metrics table shows energy_kwh summing to 82,393.7 on main and 135,708.7 on the PR, plus 64.7 percent, while its average moves from 33.75 to 33.46, minus 0.9 percent.">
+<img src="docs/images/pr-comment-fan-out.png" width="820" alt="A dbt-pr-diff pull request comment titled 2 checks failed. fct_daily_generation went from 2,441 to 4,056 rows, plus 66.2 percent, with 1,133 duplicate keys. Two failed checks are listed: pk_duplicates and row_count_pct. An AI summary notes that average energy barely moved while the sum rose 64.7 percent, which points to repeated rows, and suggests inspecting the duplicated keys and the new inverter_model join.">
 
 The average barely moves while the sum goes up 65%, which is why the comment shows both:
 
