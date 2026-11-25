@@ -69,7 +69,7 @@ def _summary_table(diffs: list[ModelDiff], failed: set[str]) -> list[str]:
 
 
 def _details(d: ModelDiff) -> list[str]:
-    key = ", ".join(f"`{k}`" for k in d.keys) or "none found"
+    key = ", ".join(f"<code>{k}</code>" for k in d.keys) or "none found"
     out = ["<details>", f"<summary><b>{d.name}</b> · key {key}</summary>", ""]
     if not d.keys:
         out += [

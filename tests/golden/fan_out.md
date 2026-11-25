@@ -13,7 +13,7 @@ Compared **HEAD (def5678)** against **main (abc1234)** · 3 models in `state:mod
 - `fct_daily_generation` · `pk_duplicates`: 1,133 keys appear more than once (base: 0)
 
 <details>
-<summary><b>fct_daily_generation</b> · key `daily_generation_id`</summary>
+<summary><b>fct_daily_generation</b> · key <code>daily_generation_id</code></summary>
 
 **Schema**
 - added `inverter_model` VARCHAR
@@ -29,7 +29,7 @@ Compared **HEAD (def5678)** against **main (abc1234)** · 3 models in `state:mod
 </details>
 
 <details>
-<summary><b>fct_site_monthly</b> · key `site_month_id`</summary>
+<summary><b>fct_site_monthly</b> · key <code>site_month_id</code></summary>
 
 **Column shifts**
 
