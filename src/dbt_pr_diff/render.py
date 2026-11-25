@@ -185,6 +185,16 @@ def markdown(
     return "\n".join(lines) + "\n"
 
 
+def _rounded(value):
+    if isinstance(value, float):
+        return float(f"{value:.6g}")
+    if isinstance(value, dict):
+        return {k: _rounded(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_rounded(v) for v in value]
+    return value
+
+
 def to_json(diffs: list[ModelDiff], breaches: list[Breach], samples=True) -> str:
     models = []
     for d in diffs:
@@ -197,7 +207,7 @@ def to_json(diffs: list[ModelDiff], breaches: list[Breach], samples=True) -> str
                 del item[k]
         models.append(item)
     return json.dumps(
-        {"models": models, "breaches": [asdict(b) for b in breaches]},
+        _rounded({"models": models, "breaches": [asdict(b) for b in breaches]}),
         indent=2,
         default=str,
     )
