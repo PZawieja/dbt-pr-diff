@@ -1,7 +1,7 @@
 WITH readings AS (
     SELECT *
     FROM {{ ref('stg_generation_readings') }}
-    WHERE reading_quality = 'ok'
+    WHERE reading_quality IN ('ok', 'estimated')
 )
 
 , sites AS (
