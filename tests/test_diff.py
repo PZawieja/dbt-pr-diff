@@ -103,6 +103,14 @@ def test_new_removed_and_missing_models(tmp_path):
     assert ghost.status == "missing"
 
 
+def test_float_noise_is_not_a_change():
+    from dbt_pr_diff.diff import same
+
+    assert same(82393.70000000001, 82393.7)
+    assert not same(82393.7, 82393.8)
+    assert pct(82393.70000000001, 82393.7) == 0.0
+
+
 def test_pct_edges():
     assert pct(None, 1) is None
     assert pct(0, 0) == 0.0

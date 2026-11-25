@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass, field
 
 import duckdb
@@ -66,9 +67,18 @@ class ModelDiff:
         return self.status != "unchanged"
 
 
+def same(base: float | None, head: float | None) -> bool:
+    if base is None or head is None:
+        return base is head
+    # parallel float aggregation is not order-stable, so tiny drifts are noise
+    return math.isclose(base, head, rel_tol=1e-9, abs_tol=1e-9)
+
+
 def pct(base: float | None, head: float | None) -> float | None:
     if base is None or head is None:
         return None
+    if same(base, head):
+        return 0.0
     if base == 0:
         return 0.0 if head == 0 else None
     return (head - base) / abs(base) * 100
@@ -183,6 +193,7 @@ def _sample_changed(con, b, h, spec: ModelSpec, common: list[str]) -> list[dict]
     order = "kc.k"
     metrics = [m for m in spec.metrics if m in common]
     if metrics:
+
         def num(alias: str, m: str) -> str:
             return f"TRY_CAST({alias}.{q(m)} AS DOUBLE)"
 
@@ -261,7 +272,7 @@ def diff_model(con, spec: ModelSpec) -> ModelDiff:
         or d.columns_removed
         or d.columns_retyped
         or d.column_shifts
-        or any(m.sum_base != m.sum_head for m in d.metrics)
+        or not all(same(m.sum_base, m.sum_head) for m in d.metrics)
     )
     d.status = "changed" if changed else "unchanged"
     return d

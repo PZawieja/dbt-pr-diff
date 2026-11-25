@@ -24,6 +24,8 @@ def _pct(value: float | None) -> str:
         return "–"
     if value == 0:
         return "0%"
+    if abs(value) < 0.05:
+        return "±0.0%"
     return f"{value:+.1f}%"
 
 
