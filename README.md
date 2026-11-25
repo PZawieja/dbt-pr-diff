@@ -8,7 +8,7 @@ It is a GitHub Action and a CLI of about 1,000 lines with no server and no accou
 
 ## What the comment looks like
 
-From the [fan-out demo PR](../../pulls), where a join to `stg_inverters` duplicates every site with more than one inverter:
+From the [fan-out demo PR](https://github.com/PZawieja/dbt-pr-diff/pull/2), where a join to `stg_inverters` duplicates every site with more than one inverter:
 
 > ## ❌ dbt-pr-diff: 2 checks failed
 >
@@ -103,10 +103,10 @@ git switch demo/fan-out && uv run dbt-pr-diff compare --project-dir examples/tel
 
 | PR | What it does | Verdict |
 |---|---|---|
-| Safe refactor | Renames CTEs and reformats SQL | ✅ no data changes |
-| Silent fan-out | Adds `inverter_model` by joining inverters without aggregating | ❌ duplicate keys, rows +66% |
-| Filter drift | Lets `estimated` readings into the trusted daily table | ⚠️ rows added, null rate shifts |
-| Capacity-factor fix | Divides by installed kW instead of peak kW | ⚠️ values change, rows don't |
+| [#1 Safe refactor](https://github.com/PZawieja/dbt-pr-diff/pull/1) | Renames CTEs and reformats SQL | ✅ no data changes |
+| [#2 Silent fan-out](https://github.com/PZawieja/dbt-pr-diff/pull/2) | Adds `inverter_model` by joining inverters without aggregating | ❌ duplicate keys, rows +66% |
+| [#3 Filter drift](https://github.com/PZawieja/dbt-pr-diff/pull/3) | Lets `estimated` readings into the trusted daily table | ⚠️ rows added, null rate shifts |
+| [#4 Capacity-factor fix](https://github.com/PZawieja/dbt-pr-diff/pull/4) | Divides by installed kW instead of peak kW | ⚠️ values change, rows don't |
 
 ## AI summary
 
