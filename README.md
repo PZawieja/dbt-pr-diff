@@ -1,5 +1,53 @@
 # dbt-pr-diff
 
+**When someone changes a data model, this shows the reviewer what happens to the actual numbers, not just the code, before the change goes live.**
+
+## At a glance
+
+### The problem
+
+Data teams review changes the way software teams do. Someone proposes an edit (a *pull request*), a colleague reads the code and approves it. But a change can look harmless in code and still break the numbers. One extra join can quietly double every row in a table, and every report built on it doubles too. Nobody notices until a dashboard looks wrong in a meeting.
+
+### How it works, simply
+
+1. Someone proposes a change to the data models.
+2. The tool builds the data twice, before and after the change, and compares the two.
+3. It posts one short report on the proposal: how many rows changed, whether anything got duplicated, which totals moved.
+4. If a rule is broken, for example rows were duplicated, the check turns red so the change can't be merged by accident.
+
+### What you get
+
+- **Reviewers see the effect on the data in seconds**, without running anything themselves.
+- **Duplicated rows are caught before they reach a dashboard.** In the demo, a new join raised total energy by 65% while the average moved less than 1%: exactly the kind of change that passes a code review.
+- **Intended changes come with evidence.** "The metric changes for these sites, row counts don't" is easier to approve than a wall of SQL.
+- **Nothing to run or pay for**: a GitHub Action with no server and no account. An AI summary of the numbers is optional.
+
+### Analytics engineering tasks it covers
+
+- Reviewing dbt pull requests
+- Testing model changes for regressions before they reach production
+- Catching grain breaks and fan-out joins
+- Checking that a metric change moved the numbers it was meant to, and only those
+- dbt CI on GitHub Actions
+- Writing the "what changes in the data" part of a PR description
+
+### Can I use it at work?
+
+- **Your dbt project runs on DuckDB:** yes, as is. Add one workflow file ([Quickstart](#quickstart)) and every PR gets the comment. About 15 minutes.
+- **Your project runs on Snowflake, BigQuery or Databricks:** not directly, because it builds both sides in DuckDB. Use the comment as the template for what a data PR should show, run the same comparison by hand with the SQL in [the post](https://goldlayer.dev/writing/data-pull-requests-show-the-numbers.html), or use [Recce](https://github.com/DataRecce/recce) or dbt Cloud's "compare changes", which work against those warehouses.
+- **Any team, starting with your next PR:** add a short "what changes in the data" table to the description (row counts before and after, duplicate keys, the totals you expected to move). No tool needed.
+
+### Try it in two minutes
+
+```bash
+git clone https://github.com/PZawieja/dbt-pr-diff && cd dbt-pr-diff && uv sync
+git switch demo/fan-out && uv run dbt-pr-diff compare --project-dir examples/telhado
+```
+
+Or just read the comments on the [four open demo PRs](#the-demo).
+
+## What it does
+
 A reviewer can read your SQL. Without help, they can't see that the join you added doubled the rows in `fct_daily_generation`.
 
 dbt-pr-diff builds both sides of a dbt pull request in DuckDB, compares every model in `state:modified+`, and posts the numbers as one comment on the PR. That covers row counts, keys added, removed and changed, duplicate keys, schema changes, column null-rate and distinct-count shifts, and sums and averages of the columns you mark as metrics. A `fail_on` rule turns a grain break into a red check.
