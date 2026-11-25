@@ -119,6 +119,13 @@ def select(
     return sorted(ids)
 
 
+def head_name() -> str:
+    if os.environ.get("GITHUB_HEAD_REF"):
+        return os.environ["GITHUB_HEAD_REF"]
+    branch = git("rev-parse", "--abbrev-ref", "HEAD")
+    return "HEAD" if branch == "HEAD" else branch
+
+
 def is_fork_pr() -> bool:
     path = os.environ.get("GITHUB_EVENT_PATH")
     if not path or not os.path.exists(path):
@@ -158,6 +165,10 @@ def compare(args: argparse.Namespace) -> int:
 
     base_sha = git("rev-parse", "--short", args.base_ref)
     head_sha = git("rev-parse", "--short", "HEAD")
+    if os.environ.get("GITHUB_HEAD_REF") and os.environ.get("GITHUB_EVENT_PATH"):
+        event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+        sha = ((event.get("pull_request") or {}).get("head") or {}).get("sha")
+        head_sha = sha[:7] if sha else head_sha
     if args.base_db:
         base_db = Path(args.base_db).resolve()
         base_target = Path(args.base_state).resolve()
@@ -206,8 +217,8 @@ def compare(args: argparse.Namespace) -> int:
     markdown = render.markdown(
         diffs,
         breaches,
-        base_label=f"{args.base_ref} ({base_sha})",
-        head_label=f"HEAD ({head_sha})",
+        base_label=f"{args.base_ref.removeprefix('origin/')} ({base_sha})",
+        head_label=f"{head_name()} ({head_sha})",
         ai_summary=ai,
     )
     (out / "pr-diff.md").write_text(markdown)
