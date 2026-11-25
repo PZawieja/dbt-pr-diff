@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: int_site_daily_generation
+    description: Trusted daily readings joined to site capacity.
+    columns:
+      - name: site_id
+        data_tests: [not_null]
+      - name: generation_date
+        data_tests: [not_null]

@@ -1,0 +1,39 @@
+[project]
+name = "dbt-pr-diff"
+version = "0.1.0"
+description = "Post the numbers on dbt pull requests: row counts, key changes, grain breaks and metric shifts, compared in DuckDB."
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Piotr Zawieja" }]
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.1",
+    "dbt-duckdb>=1.9",
+    "pyyaml>=6.0.4",
+]
+
+[project.optional-dependencies]
+ai = [
+    "anthropic>=0.70",
+]
+
+[project.scripts]
+dbt-pr-diff = "dbt_pr_diff.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "sqlfluff>=3.2"]
+
+[build-system]
+requires = ["uv_build>=0.11.20,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+extend-exclude = ["examples/telhado/dbt_packages", "examples/telhado/target"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

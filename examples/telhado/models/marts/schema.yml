@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: fct_daily_generation
+    description: One row per site per day with a trusted reading.
+    columns:
+      - name: daily_generation_id
+        description: site_id and generation_date, the grain of this table.
+        data_tests: [not_null, unique]
+      - name: site_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_sites')
+                field: site_id
+      - name: generation_date
+        data_tests: [not_null]
+      - name: energy_kwh
+        meta:
+          diff_metric: true
+      - name: capacity_factor
+        description: Energy produced over the energy the site could produce running at capacity for 24 hours.
+        meta:
+          diff_metric: true
+
+  - name: dim_sites
+    description: One row per site with capacity and inverter count.
+    columns:
+      - name: site_id
+        data_tests: [not_null, unique]
+      - name: inverter_count
+        data_tests: [not_null]
+
+  - name: fct_site_monthly
+    description: One row per site per month.
+    columns:
+      - name: site_month_id
+        data_tests: [not_null, unique]
+      - name: energy_kwh
+        meta:
+          diff_metric: true
+      - name: avg_capacity_factor
+        meta:
+          diff_metric: true

@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: stg_sites
+    description: One row per rooftop site, with installed and peak capacity.
+    columns:
+      - name: site_id
+        data_tests: [not_null, unique]
+      - name: installed_kw
+        data_tests: [not_null]
+      - name: peak_kw
+        data_tests: [not_null]
+
+  - name: stg_inverters
+    description: One row per inverter. A site has one to three.
+    columns:
+      - name: inverter_id
+        data_tests: [not_null, unique]
+      - name: site_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_sites')
+                field: site_id
+
+  - name: stg_generation_readings
+    description: One daily meter reading per site.
+    columns:
+      - name: reading_id
+        data_tests: [not_null, unique]
+      - name: reading_quality
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [ok, estimated, missing]

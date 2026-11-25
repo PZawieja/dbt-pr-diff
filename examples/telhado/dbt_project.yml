@@ -1,0 +1,21 @@
+name: telhado
+version: "1.0.0"
+profile: telhado
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+
+models:
+  telhado:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table
+
+seeds:
+  telhado:
+    raw_generation_readings:
+      +column_types:
+        reading_date: date
